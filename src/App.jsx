@@ -1,29 +1,35 @@
 import { useState, useEffect } from 'react';
+import Card from './components/Card';
 import './App.css';
 
 function App() {
   const [generation, setGeneration] = useState(1);
-  const [pokemonURLs, setPokemonURLs] = useState([]);
+  const [pokemonIDs, setPokemonIDs] = useState(null)
   const [numberOfPokemon, setNumberOfPokemon] = useState(0);
   const [numberOfCards, setNumberOfCards] = useState(1);
-  const [randomNums, setRandomNums] = useState([]);
+  // const [randomNums, setRandomNums] = useState([]);   //just for testing
   const [inGame, setInGame] = useState(false);
   const [randomPokemon, setRandomPokemon] = useState([]);
 
-  let urls;
-  const setUrls = (info) => {
-    urls = info.pokemon_species.map(item => item.url);
-    // console.log("urls from setUrls: ", urls)
-    setPokemonURLs(urls);
+  //let IDs;
+  const setIdFromUrl = (generationData) => {
+    const urls = generationData.pokemon_species.map(item => item.url);
+    //IDs = urls.map(url => getPokemonId(url));
+    setPokemonIDs(urls.map(url => getPokemonId(url)));
     setNumberOfPokemon(urls.length);
   } 
+
+  const getPokemonId = (url) => {
+    const urlParts = url.split('/');
+    return urlParts[urlParts.length - 2];
+  }
 
   useEffect(() => {
     //gets URLs and a number of all Pokemon from a selected generation
     console.log("useEffecte FETCH done - URLs saved to pokemonURLs")
     fetch(`https://pokeapi.co/api/v2/generation/${generation}`)
       .then(res => res.json())
-      .then(data => setUrls(data)); 
+      .then(data => setIdFromUrl(data)); 
   }, [generation]);
 
   const getRandomNumbers = (numberOfCards) => {
@@ -42,6 +48,30 @@ function App() {
     return nums;
   }
 
+  const getCards = () => {
+    //fetches data of random Pokemon used for cards and changes inGame status to true
+    const randNums = getRandomNumbers(numberOfCards);
+    // setRandomNums(randNums);  //just for testing
+    setInGame(true);
+    // console.log('randNums from getCards: ', randNums)
+    // console.log('randomNums from getCards: ', randomNums)
+
+    for(let i=0; i<randNums.length; i++){
+      fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonIDs[randNums[i]]}`)
+      .then(res => res.json())
+      .then(data => setRandomPokemon(prev => [...prev, {
+        id: data.id,
+        name: data.name,
+        img: data.sprites.other['official-artwork']['front_default'],
+      }]));
+    }
+    // console.log('randomPokemon from getCards', randomPokemon);
+  }
+
+
+  // console.log('randomPokemon from root', randomPokemon);
+
+
   const handleGenerationChange = (e) => {
     if(e.target.value < 10 && e.target.value > 0){
       setGeneration(e.target.value);
@@ -59,29 +89,6 @@ function App() {
       setNumberOfCards(e.target.value);
     }
   }
-
-  const getCards = () => {
-    //fetches data of random Pokemon used for cards and changes inGame status to true
-    const randNums = getRandomNumbers(numberOfCards);
-    setRandomNums(randNums);
-    setInGame(true);
-    // console.log('randNums from getCards: ', randNums)
-    // console.log('randomNums from getCards: ', randomNums)
-
-    for(let i=0; i<randNums.length; i++){
-      fetch(`https://pokeapi.co/api/v2/pokemon/${randNums[i]}`)
-      .then(res => res.json())
-      .then(data => setRandomPokemon(prev => [...prev, {
-        id: data.id,
-        name: data.name,
-        img: data.sprites.other['official-artwork']['front_default'],
-      }]))
-    }
-    // console.log('randomPokemon from getCards', randomPokemon);
-  }
-
-
-  // console.log('randomPokemon from root', randomPokemon);
 
 
   if(!inGame){
@@ -111,7 +118,9 @@ function App() {
   else{
     return(
       <>
-      <span>To be added...</span>
+        <div className='cards-container'>
+          {randomPokemon.map(item => <Card key={item.id} name={item.name} src={item.img} />)}
+        </div>
       </>
     )
   }
