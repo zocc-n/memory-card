@@ -12,7 +12,6 @@ function App() {
   const [randomPokemon, setRandomPokemon] = useState([]);
   const [currentScore, setCurrentScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
-  const [cardStatus, setCardStatus] = useState(null);
 
 
   const setIdFromUrl = (generationData) => {
@@ -28,20 +27,11 @@ function App() {
 
   useEffect(() => {
     //gets URLs and a number of all Pokemon from a selected generation
-    console.log("useEffecte FETCH done - URLs saved to pokemonURLs")
+    // console.log("useEffecte FETCH done - URLs saved to pokemonURLs")
     fetch(`https://pokeapi.co/api/v2/generation/${generation}`)
       .then(res => res.json())
       .then(data => setIdFromUrl(data)); 
   }, [generation]);
-
-  useEffect(() => {
-    //sets a state that tells if a card has been clicked or not
-    const obj = {};
-    for(let i=0; i<randomPokemon.length; i++){
-      obj[randomPokemon[i].id] = false;
-    }
-    setCardStatus(obj); 
-  }, [randomPokemon])
 
   useEffect(() => {
     //removes best score when number of card is changed
@@ -79,14 +69,13 @@ function App() {
         id: data.id,
         name: data.name,
         img: data.sprites.other['official-artwork']['front_default'],
+        clicked: false,
       }]));
     }
     // console.log('randomPokemon from getCards', randomPokemon);
   }
 
-
   // console.log('randomPokemon from root', randomPokemon);
-
 
   const shuffleCards = () => {
     //modern Fisher–Yates shuffle algorithm
@@ -100,8 +89,11 @@ function App() {
 
   const handleCardClick = (id) => {
     if(gameStatus === 'ingame'){
-      if(cardStatus[id] === false){
-        cardStatus[id] = true;
+      const clickedCard = randomPokemon.filter(item => item.id == id)[0];
+      // console.log('clickedCard: ',clickedCard)
+      // console.log('clickedCard.clicked: ',clickedCard.clicked)
+      if(clickedCard.clicked === false){
+        setRandomPokemon(prev => [...prev, clickedCard.clicked = true])
         setCurrentScore(prev => prev + 1);
         if(currentScore >= bestScore){
           setBestScore(prev => prev + 1);
@@ -120,7 +112,6 @@ function App() {
   const handleReturnClick = () => {
     setGameStatus("settings");
     setRandomPokemon([]);
-    setCardStatus({});
     setCurrentScore(0);
   }
 
