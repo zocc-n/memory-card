@@ -7,7 +7,6 @@ function App() {
   const [pokemonIDs, setPokemonIDs] = useState(null);
   const [numberOfPokemon, setNumberOfPokemon] = useState(0);
   const [numberOfCards, setNumberOfCards] = useState(1);
-  // const [randomNums, setRandomNums] = useState([]);   //just for testing
   const [gameStatus, setGameStatus] = useState('settings');
   const [randomPokemon, setRandomPokemon] = useState([]);
   const [currentScore, setCurrentScore] = useState(0);
@@ -27,7 +26,6 @@ function App() {
 
   useEffect(() => {
     //gets URLs and a number of all Pokemon from a selected generation
-    // console.log("useEffecte FETCH done - URLs saved to pokemonURLs")
     fetch(`https://pokeapi.co/api/v2/generation/${generation}`)
       .then(res => res.json())
       .then(data => setIdFromUrl(data)); 
@@ -42,7 +40,6 @@ function App() {
     //gets a set number of different random intigers used for Pokemon IDs
     const nums = [];
     let count = 0;
-    // console.log('numberOfCards from getRandomNumbers is', numberOfCards)
     while(count < numberOfCards){
       let randNum = Math.floor(Math.random() * numberOfPokemon + 1);
       if(!nums.includes(randNum)){
@@ -50,18 +47,13 @@ function App() {
         count++;
       }
     }
-    // console.log('Returned nums: ', nums)
     return nums;
   }
 
   const getCards = () => {
     //fetches data of random Pokemon used for cards and changes gameStatus to 'ingame'
     const randNums = getRandomNumbers(numberOfCards);
-    // setRandomNums(randNums);  //just for testing
     setGameStatus('ingame');
-    // console.log('randNums from getCards: ', randNums)
-    // console.log('randomNums from getCards: ', randomNums)
-
     for(let i=0; i<randNums.length; i++){
       fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonIDs[randNums[i]]}`)
       .then(res => res.json())
@@ -72,10 +64,7 @@ function App() {
         clicked: false,
       }]));
     }
-    // console.log('randomPokemon from getCards', randomPokemon);
   }
-
-  // console.log('randomPokemon from root', randomPokemon);
 
   const shuffleCards = () => {
     //modern Fisher–Yates shuffle algorithm
@@ -90,10 +79,9 @@ function App() {
   const handleCardClick = (id) => {
     if(gameStatus === 'ingame'){
       const clickedCard = randomPokemon.filter(item => item.id == id)[0];
-      // console.log('clickedCard: ',clickedCard)
-      // console.log('clickedCard.clicked: ',clickedCard.clicked)
+      
       if(clickedCard.clicked === false){
-        setRandomPokemon(prev => [...prev, clickedCard.clicked = true])
+        setRandomPokemon(prev => [...prev, clickedCard.clicked = true]);
         setCurrentScore(prev => prev + 1);
         if(currentScore >= bestScore){
           setBestScore(prev => prev + 1);
